@@ -11,6 +11,19 @@ def negamaxIDS(game, maxDepth):
         return score, move
 
 
+def negamaxIDSab(game, maxDepth):
+    for depth in range(maxDepth):
+        # score, move = negamaxAB(game, depth, float('inf'), -float('inf'))
+        score, move = negamaxAB(game, depth, -float('inf'), float('inf'))
+        if move != None:
+            break
+
+    if move is None:
+        # if (move is None or abs(score) == abs(float("inf"))):
+        return None, None
+    else:
+        return score, move
+
 def negamax(game, depthLeft):
     # If at terminal state or depth limit, return utility value and move None
     if game.isOver() or depthLeft == 0:
@@ -33,43 +46,65 @@ def negamax(game, depthLeft):
             bestValue, bestMove = value, move
     return bestValue, bestMove
 
-
 def negamaxAB(game, depthLeft, alpha, beta):
     # If at terminal state or depth limit, return utility value and move None
     if game.isOver() or depthLeft == 0:
         return game.getUtility(), None
     # Find best move and its value from current state
-    bestValue = -float('infinity')
+    bestValue = -float('inf')
     bestMove = None
     for move in game.getMoves():
         # Apply a move to current state
         game.makeMove(move)
         # Use depth-first search to find eventual utility value and back it up.
         #  Negate it because it will come back in context of next player
-        value, _ = negamax(game, depthLeft - 1, -beta, -alpha)
+        value, _ = negamaxAB(game, depthLeft-1, -beta, -alpha)
+        # Remove the move from current state, to prepare for trying a different move
+        game.unmakeMove(move)
         if value is None:
             continue
         value = - value
-        # Remove the move from current state, to prepare for trying a different move
-        game.unmakeMove(move)
         if value > bestValue:
             # Value for this move is better than moves tried so far from this state.
             bestValue = value
             bestMove = move
-        if value > alpha:
-            alpha = value
+            if(bestValue >= beta):
+                return bestValue, bestMove
+
+        alpha = max(bestValue, alpha)
         if (alpha >= beta):
             return alpha, move
+
     return bestValue, bestMove
 
 
-def negamaxIDSab(game, maxDepth):
-    for depth in range(maxDepth):
-        score, move = negamax(game, depth, int('inf'), -int('inf'))
-        if move != None:
-            break
-
-    return score, move
+# def negamaxAB(game, depthLeft, alpha, beta):
+#     # If at terminal state or depth limit, return utility value and move None
+#     if game.isOver() or depthLeft == 0:
+#         return game.getUtility(), None
+#     # Find best move and its value from current state
+#     bestValue = -float('infinity')
+#     bestMove = None
+#     for move in game.getMoves():
+#         # Apply a move to current state
+#         game.makeMove(move)
+#         # Use depth-first search to find eventual utility value and back it up.
+#         #  Negate it because it will come back in context of next player
+#         value, _ = negamaxAB(game, depthLeft - 1, -beta, -alpha)
+#         if value is None:
+#             continue
+#         value = - value
+#         # Remove the move from current state, to prepare for trying a different move
+#         game.unmakeMove(move)
+#         if value > bestValue:
+#             # Value for this move is better than moves tried so far from this state.
+#             bestValue = value
+#             bestMove = move
+#         if value > alpha:
+#             alpha = value
+#         if (alpha >= beta):
+#             return alpha, move
+#     return bestValue, bestMove
 
 
 class TTT(object):
@@ -124,6 +159,9 @@ class TTT(object):
 
     def getMovesExplored(self):
         return self.movesExplored
+
+    def getXMovesMade(self):
+        return self.board.count('X')
 
     def getMovesMade(self):
         return 9 - self.board.count(' ')
@@ -183,12 +221,39 @@ def playGame(game, opponent, depthLimit, method):
             print(game)
             game.changePlayer()
 
+def printResults(game, algorithm):
+    ebfCalculated = "{0:.2f}".format(ebf(game.getMovesExplored(), game.getMovesMade()))
+    line = "{} made {} moves. {} moves explored for ebf({}, {}) of {}".format(algorithm, game.getXMovesMade(), game.getMovesExplored(), game.getMovesExplored(), game.getMovesMade(),ebfCalculated)
+    print(line)
 
-game = TTT()
-playGame(game, opponent, 20, "negamax")
-print("Moves Explored: ", game.getMovesExplored())
-print("EBS: ", ebf(game.getMovesExplored(), game.getMovesMade()))
-game = TTT()
-playGame(game, opponent, 20, "negamaxIDS")
-print("Moves Explored: ", game.getMovesExplored())
-print("EBS: ", ebf(game.getMovesExplored(), game.getMovesMade()))
+
+def playGames(opponent, depthLimit):
+    game = TTT()
+    algorithm = "negamax"
+    playGame(game, opponent, depthLimit, algorithm)
+    printResults(game, algorithm)
+    game = TTT()
+    algorithm = "negamaxIDS"
+    playGame(game, opponent, depthLimit, algorithm)
+    printResults(game, algorithm)
+    game = TTT()
+    algorithm = "negamaxIDSab"
+    playGame(game, opponent, depthLimit, algorithm)
+    printResults(game, algorithm)
+
+
+
+playGames(opponent, 20)
+
+# game = TTT()
+# playGame(game, opponent, 20, "negamax")
+# print("Moves Explored: ", game.getMovesExplored())
+# print("EBS: ", ebf(game.getMovesExplored(), game.getMovesMade()))
+# game = TTT()
+# playGame(game, opponent, 20, "negamaxIDS")
+# print("Moves Explored: ", game.getMovesExplored())
+# print("EBS: ", ebf(game.getMovesExplored(), game.getMovesMade()))
+# game = TTT()
+# playGame(game, opponent, 20, "negamaxIDSab")
+# print("Moves Explored: ", game.getMovesExplored())
+# print("EBS: ", ebf(game.getMovesExplored(), game.getMovesMade()))

@@ -77,36 +77,6 @@ def negamaxAB(game, depthLeft, alpha, beta):
 
     return bestValue, bestMove
 
-
-# def negamaxAB(game, depthLeft, alpha, beta):
-#     # If at terminal state or depth limit, return utility value and move None
-#     if game.isOver() or depthLeft == 0:
-#         return game.getUtility(), None
-#     # Find best move and its value from current state
-#     bestValue = -float('infinity')
-#     bestMove = None
-#     for move in game.getMoves():
-#         # Apply a move to current state
-#         game.makeMove(move)
-#         # Use depth-first search to find eventual utility value and back it up.
-#         #  Negate it because it will come back in context of next player
-#         value, _ = negamaxAB(game, depthLeft - 1, -beta, -alpha)
-#         if value is None:
-#             continue
-#         value = - value
-#         # Remove the move from current state, to prepare for trying a different move
-#         game.unmakeMove(move)
-#         if value > bestValue:
-#             # Value for this move is better than moves tried so far from this state.
-#             bestValue = value
-#             bestMove = move
-#         if value > alpha:
-#             alpha = value
-#         if (alpha >= beta):
-#             return alpha, move
-#     return bestValue, bestMove
-
-
 class TTT(object):
     def __init__(self):
         self.board = [' '] * 9
